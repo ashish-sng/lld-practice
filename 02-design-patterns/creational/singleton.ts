@@ -1,12 +1,16 @@
-// Singleton Pattern
+// STEP 1: Create a class where only ONE object should exist
+
 class Logger {
-  // 1. Hold the single instance
+  // This will store the single object
   private static instance: Logger;
 
-  // 2. Make constructor private (no one can do `new Logger()`)
+  // STEP 2: Make constructor private
+  // So no one can do: new Logger()
   private constructor() {}
 
-  // 3. Global access point
+  // STEP 3: Provide a single way to access the object
+  // If object doesn't exist → create it
+  // If already exists → return same one
   public static getInstance(): Logger {
     if (!Logger.instance) {
       Logger.instance = new Logger();
@@ -14,18 +18,22 @@ class Logger {
     return Logger.instance;
   }
 
-  // 4. Some method
+  // STEP 4: Normal method
   public log(message: string) {
     console.log(`[LOG]: ${message}`);
   }
 }
 
-// usecase
+// STEP 5: Usage
+
+// You never use "new"
+// Always use getInstance()
+
 const logger1 = Logger.getInstance();
 const logger2 = Logger.getInstance();
 
 logger1.log("Hello");
 logger2.log("World");
 
-// Proof it's same instance
+// Both are SAME object
 console.log(logger1 === logger2); // true

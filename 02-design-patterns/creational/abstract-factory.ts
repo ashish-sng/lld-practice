@@ -1,78 +1,129 @@
-// Abstract factory
+// STEP 1: Define what objects we need
+// These are just rules (no implementation)
+
 interface Chair {
-    chair(name: string): void;
+  sitOn(): void;
 }
 
 interface Sofa {
-  sofa(name: string): void;
+  lieOn(): void;
 }
 
 interface Table {
-  table(name: string): void;
+  use(): void;
 }
+
+
+// STEP 2: Create real objects (Victorian family)
+// All these belong to SAME style → Victorian
 
 class VictorianChair implements Chair {
-    chair(name: string) {
-        console.log(`this is Victorian ${name} chair`);
-    }
+  sitOn() {
+    console.log("Sitting on Victorian Chair");
+  }
 }
+
 class VictorianSofa implements Sofa {
-  sofa(name: string) {
-    console.log(`this is Victorian ${name} sofa`);
+  lieOn() {
+    console.log("Lying on Victorian Sofa");
   }
 }
+
 class VictorianTable implements Table {
-  table(name: string) {
-    console.log(`this is Victorian ${name} table`);
+  use() {
+    console.log("Using Victorian Table");
   }
 }
+
+
+// STEP 3: Create another family (Modern)
+// Again, all belong to SAME style → Modern
 
 class ModernChair implements Chair {
-    chair(name: string) {
-        console.log(`this is Modern ${name} chair`);
-    }
+  sitOn() {
+    console.log("Sitting on Modern Chair");
+  }
 }
+
 class ModernSofa implements Sofa {
-  sofa(name: string) {
-    console.log(`this is Modern ${name} sofa`);
+  lieOn() {
+    console.log("Lying on Modern Sofa");
   }
 }
+
 class ModernTable implements Table {
-  table(name: string) {
-    console.log(`this is Modern ${name} table`);
+  use() {
+    console.log("Using Modern Table");
   }
 }
+
+
+// STEP 4: Create abstract factory (main idea)
+// This says:
+// "Any factory must give me ALL 3 things (chair, sofa, table)"
 
 abstract class FurnitureFactory {
-    abstract addChair(): Chair;
-    abstract addSofa(): Sofa;
-    abstract addTable(): Table;
+  abstract createChair(): Chair;
+  abstract createSofa(): Sofa;
+  abstract createTable(): Table;
 }
+
+
+// STEP 5: Concrete factory for Victorian
+// It returns ONLY Victorian objects
 
 class VictorianFurnitureFactory extends FurnitureFactory {
-    addChair(): Chair {
-        return new VictorianChair();
-    }
-    addSofa(): Sofa {
-        return new VictorianSofa();
-    }
-    addTable(): Table {
-        return new VictorianTable();
-    }
+  createChair(): Chair {
+    return new VictorianChair();
+  }
+
+  createSofa(): Sofa {
+    return new VictorianSofa();
+  }
+
+  createTable(): Table {
+    return new VictorianTable();
+  }
 }
+
+
+// STEP 6: Concrete factory for Modern
+// It returns ONLY Modern objects
 
 class ModernFurnitureFactory extends FurnitureFactory {
-    addChair(): Chair {
-        return new ModernChair();
-    }
-    addSofa(): Sofa {
-        return new ModernSofa();
-    }
-    addTable(): Table {
-        return new ModernTable();
-    }
+  createChair(): Chair {
+    return new ModernChair();
+  }
+
+  createSofa(): Sofa {
+    return new ModernSofa();
+  }
+
+  createTable(): Table {
+    return new ModernTable();
+  }
 }
 
+
+// STEP 7: Usage (this is where magic happens)
+
+function setupRoom(factory: FurnitureFactory) {
+  // We don’t care if it's Victorian or Modern
+  // Factory decides everything
+
+  const chair = factory.createChair();
+  const sofa = factory.createSofa();
+  const table = factory.createTable();
+
+  chair.sitOn();
+  sofa.lieOn();
+  table.use();
+}
+
+
+// Change just ONE line → whole theme changes
+
 const factory = new VictorianFurnitureFactory();
-const chair = factory.addChair();
-chair.chair("Ashish");
+// const factory = new ModernFurnitureFactory();
+
+setupRoom(factory);
