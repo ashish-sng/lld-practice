@@ -26,6 +26,19 @@ public class User {
         this.isVerified = builder.isVerified;  
     }
 
+    public User(User other) {
+        this.firstName = other.firstName;
+        this.lastName = other.lastName; 
+        this.age = other.age;  
+        this.email = other.email;  
+        this.phone = other.phone;  
+        this.address = other.address;  
+        this.profilePicUrl = other.profilePicUrl;  
+        this.bio = other.bio;  
+        this.role = other.role;  
+        this.isVerified = other.isVerified;  
+    }
+     
     @Override
     public String toString() {
         return "User{" +
