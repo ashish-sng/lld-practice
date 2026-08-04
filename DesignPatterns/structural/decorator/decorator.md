@@ -1,86 +1,210 @@
-# Decorator Pattern in This Example
+# Decorator Pattern
 
-This example uses the Decorator pattern for a relatable situation:
+Decorator is a structural design pattern used to add behavior to an object dynamically without changing its class.
 
-- customizing a cup of tea at home
+The biggest idea is:
 
-You may start with plain tea and then add:
+- keep the same interface
+- wrap the object
+- add extra behavior layer by layer
 
-- ginger
-- honey
-- lemon
+It is preferred when we want flexible combinations of features without creating too many subclasses.
 
-Each add-on changes the final drink without needing a brand-new class for every possible combination.
+## Standard Industry Example
 
-## Classes and their roles
+A very common real-world example is a notification system.
 
-- `Beverage`
-  - Common interface for all drink objects.
+Suppose we have a base notifier:
 
-- `PlainTea`
-  - The base object.
+- `EmailNotifier`
 
-- `BeverageDecorator`
-  - Base decorator class that stores another `Beverage`.
+Now based on business need, we may want to add:
 
-- `GingerDecorator`
-- `HoneyDecorator`
-- `LemonDecorator`
-  - Concrete decorators.
-  - Each one adds its own description and cost.
+- Slack notifications
+- SMS notifications
+- WhatsApp notifications
 
-## How it works
+For example:
 
-In `Main`, we start with:
+- normal event: send only email
+- important event: send email + Slack
+- critical alert: send email + Slack + SMS + WhatsApp
+
+If we try to model this only with inheritance, we may end up with too many classes like:
+
+- `EmailNotifier`
+- `EmailSlackNotifier`
+- `EmailSlackSmsNotifier`
+- `EmailSmsWhatsappNotifier`
+
+That becomes hard to maintain.
+
+Decorator solves this by wrapping one notifier inside another.
+
+## Core Structure
+
+- `NotificationService`
+  - component interface
+  - common contract for all objects
+
+- `EmailNotifier`
+  - concrete component
+  - base implementation
+
+- `NotificationDecorator`
+  - base decorator
+  - stores a reference to another `NotificationService`
+
+- `SlackNotifierDecorator`
+- `SmsNotifierDecorator`
+- `WhatsappNotifierDecorator`
+  - concrete decorators
+  - add extra behavior while keeping the same interface
+
+## Flow
+
+We may start with:
 
 ```java
-Beverage eveningTea = new PlainTea();
+NotificationService notifier = new EmailNotifier();
 ```
 
-Then we wrap it step by step:
+Then add layers:
 
 ```java
-eveningTea = new GingerDecorator(eveningTea);
-eveningTea = new HoneyDecorator(eveningTea);
-eveningTea = new LemonDecorator(eveningTea);
+notifier = new SlackNotifierDecorator(notifier);
+notifier = new SmsNotifierDecorator(notifier);
 ```
 
-Each wrapper adds new behavior on top of the previous object.
-
-So when we call:
+Now one call:
 
 ```java
-eveningTea.getDescription();
-eveningTea.getCost();
+notifier.send("Payment failed for order #123");
 ```
 
-the final result includes all added layers.
+will trigger:
 
-## Why this is useful
+- email
+- Slack
+- SMS
 
-Without Decorator, you may end up creating many rigid classes like:
+Each decorator first delegates to the wrapped object, then adds its own behavior.
 
-- `GingerTea`
-- `HoneyTea`
-- `LemonTea`
-- `GingerHoneyTea`
-- `HoneyLemonTea`
+That means behavior is built step by step through composition.
 
-That grows very quickly.
+## Why This Is Decorator
 
-With Decorator:
+Decorator works because:
 
-- the base object stays small
-- features are added dynamically
-- combinations become flexible
+- all layers implement the same interface
+- each decorator wraps another object of the same interface type
+- client code does not need to care how many layers are present
 
-## Why this example feels practical
+So the object becomes more capable without changing the original class.
 
-People customize things every day:
+## Key Benefits
 
-- tea
-- coffee
-- sandwiches
-- gift wrapping
+- avoids subclass explosion
+- adds behavior at runtime
+- follows composition over inheritance
+- keeps base classes simple
+- allows flexible combinations of features
 
-The Decorator pattern fits naturally whenever something starts simple and gains optional layers.
+## Interview Definition
+
+Decorator adds responsibilities to an object dynamically by wrapping it, while keeping the same interface.
+
+## Interview Mental Model
+
+Think of Decorator as:
+
+- "same object from outside"
+- "enhanced behavior inside"
+
+The client still talks to the same interface, but internally extra layers are attached.
+
+## Decorator vs Adapter
+
+- Decorator keeps the same interface and adds behavior.
+- Adapter changes one interface into another.
+
+Shortcut:
+
+- Adapter = translator
+- Decorator = enhancer
+
+## Decorator vs Facade
+
+- Decorator adds features to one object.
+- Facade simplifies access to a group of objects.
+
+Shortcut:
+
+- Facade hides complexity
+- Decorator adds capability
+
+## Decorator vs Builder
+
+- Decorator is used to add behavior to an existing object dynamically.
+- Builder is used to create a complex object step by step.
+
+Shortcut:
+
+- Builder = object creation
+- Decorator = object enhancement
+
+In simple words:
+
+- Builder answers:
+  - "How do I construct this object cleanly?"
+- Decorator answers:
+  - "How do I add more features to this object without changing its base class?"
+
+## When To Use
+
+Use Decorator when:
+
+- you want optional features that can be combined
+- you want to avoid many subclasses for every combination
+- you want to add behavior without modifying existing classes
+
+Very common use cases:
+
+- notifications
+- logging
+- caching
+- retry handling
+- authentication layers
+- compression/encryption streams
+- middleware pipelines
+
+## Interview Notes
+
+- Pattern type:
+  - structural
+
+- Main problem it solves:
+  - too many subclasses for feature combinations
+
+- Main design principle:
+  - composition over inheritance
+
+- Key sign that Decorator fits:
+  - "I want to add optional features around an object, and features can be stacked."
+
+- Watch for this question in interviews:
+  - "How is Decorator different from inheritance?"
+  - Good answer:
+    - inheritance adds behavior statically at class level
+    - decorator adds behavior dynamically at object level
+
+- Another strong interview line:
+  - "Decorator is useful when behavior needs to be layered without changing the client contract."
+
+## Quick Revision Summary
+
+- same interface
+- wrapper object
+- adds behavior dynamically
+- avoids subclass explosion
+- best understood as stacked feature layers
