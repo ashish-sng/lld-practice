@@ -2,10 +2,10 @@ package DesignPatterns.structural.adapter;
 
 public class Main {
     public static void main(String[] args) {
-        WiredEarphones wiredEarphones = new WiredEarphones();
-        AudioAccessory adapter = new TypeCPortAdapter(wiredEarphones);
-        ModernPhone modernPhone = new ModernPhone(adapter);
+        RazorpayApi razorpayApi = new RazorpayApi();
+        PaymentGateway paymentGateway = new RazorpayAdapter(razorpayApi);
 
-        modernPhone.useAccessory();
+        CheckoutService checkoutService = new CheckoutService(paymentGateway);
+        checkoutService.checkout(100); // Checkout for Rs. 100
     }
 }
