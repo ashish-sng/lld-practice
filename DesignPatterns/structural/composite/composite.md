@@ -1,124 +1,83 @@
-# Composite Pattern in This Example
+# Composite Pattern: Industry-Level File System Engine
 
-This example uses the Composite pattern for a very practical daily-life situation:
+The **Composite Pattern** allows you to compose objects into tree structures to represent part-whole hierarchies. It lets client code treat individual leaf objects (`File`) and compositions of objects (`Directory`) uniformly.
 
-- packing clothes and small pouches inside a travel bag
+---
 
-Sometimes we deal with a single item like:
+## 🎯 The Real-World Industry Problem
 
-- a T-shirt
-- jeans
-- a jacket
+Consider a Unix/Cloud File System (like Linux VFS, AWS S3, or Google Drive):
+- A **File** has a name and a specific size in bytes.
+- A **Directory** has a name and contains a list of items. Those items can be **Files** OR **sub-Directories**!
 
-Sometimes we deal with a group item like:
+When you query the size of a folder (e.g. `du -sh` or Right Click $\rightarrow$ Properties), or print a directory tree (`tree`), the system recursively calculates the total size and prints the nested structure.
 
-- a toiletries pouch
-- a weekend travel bag
+---
 
-The Composite pattern lets us treat both single items and grouped items in the same way.
+## ❌ Without the Composite Pattern
 
-## Classes and their roles
-
-- `Packable`
-  - Common interface for both single items and grouped items.
-  - It defines:
-    - `showDetails()`
-    - `getWeight()`
-
-- `ClothingItem`
-  - This is the leaf object.
-  - It represents a single packable item.
-
-- `TravelBag`
-  - This is the composite object.
-  - It can store many `Packable` objects.
-  - Those objects can be:
-    - single items
-    - other bags or grouped items
-
-## How it works
-
-In `Main`, we create leaf objects like:
-
+Without Composite, your client code has to constantly check types:
 ```java
-Packable tshirt = new ClothingItem("T-Shirt", 200);
-Packable jeans = new ClothingItem("Jeans", 700);
+if (item instanceof Directory) {
+    // Loop through sub-items, check if sub-item is directory or file...
+} else if (item instanceof File) {
+    // Return file size...
+}
+```
+This leads to messy nested `if-else` loops, type checking (`instanceof`), and code that breaks whenever new file system types are added.
+
+---
+
+## ✅ With the Composite Pattern
+
+Both `FileItem` (Leaf) and `DirectoryItem` (Composite) implement a single interface: `FileSystemItem`.
+
+```
+                    ┌─────────────────┐
+                    │ FileSystemItem  │ (Interface)
+                    │  - getName()    │
+                    │  - getSize()    │
+                    │  - print(...)   │
+                    └────────┬────────┘
+                             │
+            ┌────────────────┴────────────────┐
+            ▼                                 ▼
+   ┌────────────────┐                ┌────────────────┐
+   │    FileItem    │                │ DirectoryItem  │
+   │    (Leaf)      │                │  (Composite)   │
+   └────────────────┘                └────────┬───────┘
+                                              │
+                                              │ holds List of
+                                              └────────► [ FileSystemItem ]
 ```
 
-Then we create a smaller grouped object:
+The client calls `.getSize()` or `.print("")` on the root `FileSystemItem`, and polymorphism + recursion handle the entire tree seamlessly!
 
-```java
-TravelBag toiletriesPouch = new TravelBag("Toiletries pouch");
-toiletriesPouch.add(new ClothingItem("Hand towel", 150));
-toiletriesPouch.add(new ClothingItem("Socks", 80));
-```
+---
 
-Then we create the main bag:
+## 🛠️ Step-by-Step Practice Guide
 
-```java
-TravelBag weekendBag = new TravelBag("Weekend travel bag");
-weekendBag.add(tshirt);
-weekendBag.add(jeans);
-weekendBag.add(jacket);
-weekendBag.add(toiletriesPouch);
-```
+### 1. Component Interface
+Create `FileSystemItem.java`:
+- `String getName()`
+- `long getSize()`
+- `void print(String indent)`
 
-Notice something important:
+### 2. Leaf Object
+Create `FileItem.java`:
+- Implements `FileSystemItem`.
+- Stores `name` and `sizeInBytes`.
+- `getSize()` returns `sizeInBytes`.
+- `print(indent)` prints `indent + "📄 " + name + " (" + sizeInBytes + " bytes)"`.
 
-- `weekendBag` stores both simple objects and another composite object
+### 3. Composite Object
+Create `DirectoryItem.java`:
+- Implements `FileSystemItem`.
+- Stores `name` and `List<FileSystemItem> children = new ArrayList<>()`.
+- Methods: `add(FileSystemItem item)`, `remove(FileSystemItem item)`.
+- `getSize()`: Loops through `children`, sums `child.getSize()`, and returns total bytes recursively!
+- `print(indent)`: Prints `indent + "📁 " + name`, then loops through `children` calling `child.print(indent + "  ")`.
 
-That is the core idea of Composite.
+### 4. Client Execution
+Use `DirectoryItem` and `FileItem` in `Main.java` to build a complex directory tree and calculate total storage usage.
 
-## How the common treatment works
-
-When this runs:
-
-```java
-weekendBag.showDetails();
-```
-
-the bag loops through every `Packable` item and calls:
-
-```java
-item.showDetails();
-```
-
-It does not care whether that item is:
-
-- a single `ClothingItem`
-- another `TravelBag`
-
-The same idea applies to:
-
-```java
-weekendBag.getWeight();
-```
-
-If the object is a leaf, it returns its own weight.
-If the object is a composite, it sums the weight of everything inside it.
-
-## Why this is useful
-
-Without Composite, client code would need special handling like:
-
-- if item is a single object, do one thing
-- if item is a bag, loop through children separately
-
-That makes the code more complex.
-
-With Composite:
-
-- leaf and group objects share the same interface
-- client code becomes simpler
-- nested structures become easier to manage
-
-## Why this example feels practical
-
-People organize many things in this nested way:
-
-- bags inside bags
-- folders inside folders
-- gift boxes inside bigger boxes
-- grocery baskets with grouped items
-
-The Composite pattern is useful whenever individual objects and collections of objects should be treated uniformly.
