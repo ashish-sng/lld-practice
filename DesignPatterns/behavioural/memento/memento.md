@@ -1,70 +1,163 @@
-# Memento Pattern: Text Editor Undo/Redo Engine
+# Memento is a behavioral design pattern that allows capturing and restoring an object's internal state without exposing its implementation details.
 
-The **Memento Pattern** is a behavioral design pattern that allows you to capture and restore an object's internal state (**Undo / Redo** mechanism) without exposing its implementation details or violating encapsulation.
+Memento pattern works like a snapshot or checkpoint mechanism. It allows an application to save the state of an object so that it can be restored later (for Undo/Redo operations) without breaking encapsulation or exposing private fields to external classes.
 
----
+# Memento Pattern in This Example
 
-## 🎯 The Real-World Industry Problem
+This example uses the Memento pattern for a practical text editor use case:
 
-Think of a text editor like **VS Code**, **Notepad**, or **Google Docs**:
+- an application allows users to type text into a `TextEditor`
+- as edits happen, the editor's internal state (`content`, `cursorPosition`) changes
+- the application wants to provide an `Undo` feature to revert back to previous states
 
-- As you type text, change font sizes, or move cursors, the editor's state changes.
-- When you press `Ctrl+Z` (Undo), the editor should instantly revert to its previous state.
-- When you press `Ctrl+Y` (Redo), it reapplies the undone state.
+Our text editor code performs actions like:
 
-### ❌ Without Memento
-If the `History` class directly reaches into `TextEditor` to save and modify internal fields (`content`, `cursorPosition`), it violates **Encapsulation**. If `TextEditor` adds new state fields in the future, the `History` class breaks!
+```java
+TextEditor txt = new TextEditor();
+History history = new History();
 
----
+txt.write("Ashish");
+history.saveState(txt.save()); // Save snapshot of "Ashish"
 
-## 💡 The 3 Core Roles in Memento
-
-```
-┌─────────────────────────┐           ┌─────────────────────────┐
-│        Caretaker        │           │       Originator        │
-│        (History)        │           │      (TextEditor)       │
-│                         │           │                         │
-│  - Stack<EditorState>   │           │  - content              │
-│    undoHistory          │           │  - cursorPosition       │
-└────────────┬────────────┘           └────────────┬────────────┘
-             │                                     │
-             │ stores snapshots                    │ creates & restores
-             ▼                                     ▼
-┌───────────────────────────────────────────────────────────────┐
-│                          EditorState                          │
-│                           (Memento)                           │
-│  - Immutable snapshot of content & cursorPosition            │
-└───────────────────────────────────────────────────────────────┘
+txt.write(" Singh"); // Content becomes "Ashish Singh"
 ```
 
-1. **Originator (`TextEditor`)**:
-   - The object whose state needs saving/restoration.
-   - Methods: `EditorState save()` and `void restore(EditorState memento)`.
+And when the user requests an Undo:
 
-2. **Memento (`EditorState`)**:
-   - Immutable snapshot holding `content` and `cursorPosition` at a single point in time.
+```java
+txt.restore(history.undo()); // Content reverts to "Ashish"
+```
 
-3. **Caretaker (`History`)**:
-   - Maintains the history stack (`Stack<EditorState>`).
-   - Pushes new snapshots on edit, and pops them when `undo()` is requested.
+The Memento pattern separates state capture from state storage cleanly.
 
----
+## Classes and their roles
 
-## 🛠️ Step-by-Step Guided Implementation
+- `EditorState`
+  - This is the Memento.
+  - It is an immutable snapshot of the editor's internal state at a specific point in time.
+  - It holds:
+    - `content`
+    - `cursorPosition`
 
-### 1. Create the Memento (`EditorState.java`)
-- Holds `private final String content;` and `private final int cursorPosition;`.
-- Immutable: values are set once via constructor, only getters exist.
+- `TextEditor`
+  - This is the Originator.
+  - It holds the active state being modified.
+  - It creates mementos via `save()`.
+  - It restores its state from mementos via `restore(EditorState)`.
 
-### 2. Create the Originator (`TextEditor.java`)
-- Holds `content` and `cursorPosition`.
-- `public EditorState save()` $\rightarrow$ returns `new EditorState(content, cursorPosition)`.
-- `public void restore(EditorState state)` $\rightarrow$ updates `this.content` and `this.cursorPosition` from `state`.
+- `History`
+  - This is the Caretaker.
+  - It manages the history stack of saved mementos (`Stack<EditorState>`).
+  - It pushes new mementos via `saveState()`.
+  - It pops past mementos via `undo()`.
+  - It does NOT inspect or modify the contents inside the mementos.
 
-### 3. Create the Caretaker (`History.java`)
-- Holds `private final Stack<EditorState> undoStack = new Stack<>();`.
-- `public void push(EditorState state)` $\rightarrow$ saves a snapshot.
-- `public EditorState pop()` $\rightarrow$ pops and returns the previous snapshot.
+- `Main`
+  - This is the client code demonstrating writing text, taking snapshots, and reverting state using `undo()`.
 
-### 4. Test in `Main.java`
-- Type text $\rightarrow$ save snapshot $\rightarrow$ make changes $\rightarrow$ perform `undo()` $\rightarrow$ verify previous state is restored!
+## How it works
+
+In `Main`, we create the originator and caretaker objects:
+
+```java
+TextEditor txt = new TextEditor();
+History history = new History();
+```
+
+Then we perform an edit and save a snapshot BEFORE making further edits:
+
+```java
+txt.write("Ashish");
+history.saveState(txt.save());
+```
+
+Then we write additional text:
+
+```java
+txt.write(" Singh");
+txt.print(); // Prints: Content: Ashish Singh (12)
+```
+
+Then we trigger an Undo:
+
+```java
+txt.restore(history.undo());
+txt.print(); // Reverts to: Content: Ashish (6)
+```
+
+## Flow of control
+
+When this sequence runs:
+
+1. `txt.write("Ashish")` updates `TextEditor` state to `content="Ashish"`, `cursorPosition=6`.
+2. `txt.save()` creates a new `EditorState("Ashish", 6)`.
+3. `history.saveState(...)` pushes this memento onto `History`'s stack.
+4. `txt.write(" Singh")` updates `TextEditor` state to `content="Ashish Singh"`, `cursorPosition=12`.
+5. `history.undo()` pops `EditorState("Ashish", 6)` off the stack.
+6. `txt.restore(...)` overwrites current state with values from the popped memento.
+
+So the editor returns to its exact state before the second edit.
+
+## Why this is useful
+
+Without Memento:
+
+- `History` or `Main` would need direct access to `TextEditor`'s private fields (`content`, `cursorPosition`).
+- External code would be responsible for copying and managing internal fields, violating **Encapsulation**.
+- Adding new internal state fields (e.g. `selectionStart`, `fontName`) would break external history code across the application.
+
+With Memento:
+
+- `TextEditor` alone decides how to capture and restore its internal state.
+- `History` only holds opaque memento objects without needing to know their internal structure.
+- Encapsulation remains intact, and adding new state fields requires changes ONLY inside `TextEditor` and `EditorState`.
+
+## Why this example feels practical
+
+This is a very real software engineering scenario.
+
+In actual production systems, state snapshotting and undo mechanisms are used in:
+
+- Text editors and IDEs (VS Code, IntelliJ, Notepad)
+- Graphic design & CAD tools (Photoshop, Figma, Canvas elements)
+- Database transactions (Savepoints and Rollbacks)
+- Game engines (State checkpoints and Quick-Saves)
+- Multi-step wizard forms (Navigating back to previous steps without data loss)
+
+## Interview Notes
+
+- Definition:
+  - Memento captures and externalizes an object's internal state so that the object can be restored to this state later without violating encapsulation.
+
+- Intent:
+  - Use it when you need to implement Undo/Redo or checkpoint/rollback mechanisms while preserving object encapsulation.
+
+- Real-world signal:
+  - Your application needs to revert an object back to a previous state, but you don't want external classes accessing its private variables.
+
+- In this example:
+  - `TextEditor` is the Originator
+  - `EditorState` is the Memento
+  - `History` is the Caretaker
+
+- Main benefit:
+  - Preserves encapsulation boundaries while enabling state restoration.
+
+- Common interview line:
+  - "Memento is a snapshot mechanism for Undo/Redo that protects encapsulation."
+
+- Difference from Command Pattern:
+  - Command encapsulates an action and implements undo by executing inverse operations (e.g. `add` $\rightarrow$ `subtract`).
+  - Memento saves the exact state snapshot at a point in time without tracking operational logic.
+
+- Difference from State Pattern:
+  - State pattern changes an object's behavior depending on its current state.
+  - Memento pattern captures and restores state snapshots over time.
+
+- When to use:
+  - Undo / Redo features in editors
+  - Transaction rollback or savepoint features
+  - Checkpoint systems in game engines or workflow pipelines
+
+- One strong design takeaway:
+  - The Originator creates and consumes Mementos; the Caretaker stores Mementos without inspecting or altering them.
