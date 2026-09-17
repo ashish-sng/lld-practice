@@ -1,0 +1,1 @@
+## So template method is like we define sequence of steps in a method and we leave the implementation of some of the steps to the subclasses. So we can have a base class which defines the sequence of steps and then we can have subclasses which implement those steps.

@@ -1,6 +1,7 @@
 # Facade Pattern: E-Commerce Order Processing System
 
 The **Facade Pattern** provides a simplified, high-level interface to a complex set of interfaces in a subsystem. It hides the complexity of subsystem interactions from the client.
+## Hiding a complicated system behind one simple interface is facade.
 
 ---
 
