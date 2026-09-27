@@ -22,6 +22,8 @@ Abstract Factory:
 "Give me everything needed for Web."
 
 
+> 📖 **Case Study:** For a deep dive into the local Burger Shop codebase (`SinghBurgerShop` vs `KingBurgerShop`), what pattern it currently implements, what is missing, and code comparisons without patterns, check [burger_abstract_factory.md](file:///Users/ashish/creative-workspace/lld-practice/DesignPatterns/creational/abstract_factory/burger_abstract_factory.md).
+
 ---
 
 # 🧠 Comprehensive Interview & Deep Dive Guide

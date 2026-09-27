@@ -1,3 +1,7 @@
+## The core idea of the Factory Pattern comes down to one rule:
+
+--> Stop using the new keyword all over your application code. Delegate object creation to a dedicated creator.
+
 ## The problem isn't that object creation is difficult.
 
 The problem is:
